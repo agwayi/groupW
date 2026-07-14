@@ -2,17 +2,16 @@
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: PUT, OPTIONS");
-
+header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
-include_once('../model/Department.php');
+include_once '../model/Department.php';
 
-$department_model = new Department();
-
+$departmentModel = new Department();
 $data = json_decode(file_get_contents("php://input"), true);
 
 $department_id = isset($data['department_id']) ? trim($data['department_id']) : '';
@@ -25,7 +24,7 @@ if (empty($department_id) || empty($name) || empty($faculty_id)) {
     exit();
 }
 
-$updateStatus = $department_model->editDepartment($name, $faculty_id, $department_id);
+$updateStatus = $departmentModel->EditDepartment($name, $faculty_id, $department_id);
 
 if ($updateStatus) {
     http_response_code(200);

@@ -78,6 +78,7 @@
                     <th>ID</th>
                     <th>Department Name</th>
                     <th>Faculty ID</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody id="departmentTableBody"></tbody>
@@ -88,6 +89,68 @@
       </div>
     </div>
 
+    <div
+      class="modal fade"
+      id="editModal"
+      tabindex="-1"
+      aria-labelledby="editModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-warning">
+            <h5 class="modal-title" id="editModalLabel">Edit Department</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="editDepartmentForm">
+              <input type="hidden" id="edit_department_id" />
+              <div class="mb-3">
+                <label for="edit_name" class="form-label"
+                  >Department Name</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="edit_name"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label for="edit_faculty_id" class="form-label"
+                  >Select Faculty</label
+                >
+                <select
+                  class="form-select"
+                  id="edit_faculty_id"
+                  required
+                ></select>
+              </div>
+              <button
+                type="submit"
+                class="btn btn-warning w-100"
+                id="editSubmitBtn"
+              >
+                <span
+                  class="spinner-border spinner-border-sm d-none"
+                  id="editBtnSpinner"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                <span id="editBtnText">Save Changes</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="../bootstrap/js/bootstrap.bundle.js"></script>
     <script>
       const baseUrl = "http://localhost:8000/api/";
 
@@ -116,7 +179,14 @@
         if (result.status === "success") {
           result.data.forEach((dept) => {
             const tr = document.createElement("tr");
-            tr.innerHTML = `<td>${dept.department_id}</td><td>${dept.name}</td><td>${dept.faculty_id}</td>`;
+            tr.innerHTML = `
+                    <td>${dept.department_id}</td>
+                    <td>${dept.name}</td>
+                    <td>${dept.faculty_id}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="openEditModal(${dept.department_id}, '${dept.name}', ${dept.faculty_id})">Edit</button>
+                    </td>
+                `;
             tbody.appendChild(tr);
           });
         }
@@ -150,9 +220,10 @@
           btnText.textContent = "Add Department";
 
           alertBox.className = "alert";
-          if (result.status === "success") {
+          if (result.status === "success" || result.status === 201) {
             alertBox.classList.add("alert-success");
-            alertBox.textContent = result.message;
+            alertBox.textContent =
+              result.message || "Department added successfully";
             form.reset();
             fetchDepartments();
           } else {
@@ -160,6 +231,73 @@
             alertBox.textContent = result.message;
           }
         });
+
+      function openEditModal(id, name, facultyId) {
+        document.getElementById("edit_department_id").value = id;
+        document.getElementById("edit_name").value = name;
+
+        const facultySelectOptions =
+          document.getElementById("facultySelect").innerHTML;
+        const editFacultySelect = document.getElementById("edit_faculty_id");
+        editFacultySelect.innerHTML = facultySelectOptions;
+        editFacultySelect.value = facultyId;
+
+        const editModal = new bootstrap.Modal(
+          document.getElementById("editModal"),
+        );
+        editModal.show();
+      }
+
+      document
+        .getElementById("editDepartmentForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const id = document.getElementById("edit_department_id").value;
+          const name = document.getElementById("edit_name").value;
+          const facultyId = document.getElementById("edit_faculty_id").value;
+          const submitBtn = document.getElementById("editSubmitBtn");
+          const btnSpinner = document.getElementById("editBtnSpinner");
+          const btnText = document.getElementById("editBtnText");
+
+          submitBtn.disabled = true;
+          btnSpinner.classList.remove("d-none");
+          btnText.textContent = "Saving...";
+
+          await editDepartment(id, name, facultyId);
+
+          submitBtn.disabled = false;
+          btnSpinner.classList.add("d-none");
+          btnText.textContent = "Save Changes";
+
+          const modalElement = document.getElementById("editModal");
+          const editModal = bootstrap.Modal.getInstance(modalElement);
+          editModal.hide();
+        });
+
+      async function editDepartment(departmentId, newName, facultyId) {
+        const payload = {
+          department_id: departmentId,
+          name: newName,
+          faculty_id: facultyId,
+        };
+
+        const response = await fetch(baseUrl + "EditDepartment.php", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const result = await response.json();
+
+        if (result.status === "success") {
+          fetchDepartments();
+        } else {
+          alert(result.message);
+        }
+      }
 
       window.onload = () => {
         fetchFacultiesForDropdown();

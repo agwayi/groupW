@@ -21,7 +21,12 @@ if (empty($name) || empty($faculty_id)) {
     exit();
 }
 
-$department_model->addDepartment($name, $faculty_id);
+$result = $department_model->AddDepartment($name, $faculty_id);
 
-http_response_code(201);
-echo json_encode(["status" => "success", "message" => "Department added successfully"]);
+if ($result) {
+    http_response_code(201);
+    echo json_encode(["status" => "success", "message" => "Department added successfully"]);
+} else {
+    http_response_code(409);
+    echo json_encode(["status" => "error", "message" => "Department already exists"]);
+}

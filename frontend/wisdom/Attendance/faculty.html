@@ -68,6 +68,7 @@
                   <tr>
                     <th>ID</th>
                     <th>Faculty Name</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody id="facultyTableBody"></tbody>
@@ -78,6 +79,56 @@
       </div>
     </div>
 
+    <div
+      class="modal fade"
+      id="editModal"
+      tabindex="-1"
+      aria-labelledby="editModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header bg-warning">
+            <h5 class="modal-title" id="editModalLabel">Edit Faculty</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="editFacultyForm">
+              <input type="hidden" id="edit_faculty_id" />
+              <div class="mb-3">
+                <label for="edit_name" class="form-label">Faculty Name</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="edit_name"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                class="btn btn-warning w-100"
+                id="editSubmitBtn"
+              >
+                <span
+                  class="spinner-border spinner-border-sm d-none"
+                  id="editBtnSpinner"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                <span id="editBtnText">Save Changes</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="../bootstrap/js/bootstrap.bundle.js"></script>
     <script>
       const baseUrl = "http://localhost:8000/api/";
 
@@ -90,7 +141,13 @@
         if (result.status === "success") {
           result.data.forEach((faculty) => {
             const tr = document.createElement("tr");
-            tr.innerHTML = `<td>${faculty.faculty_id}</td><td>${faculty.name}</td>`;
+            tr.innerHTML = `
+                    <td>${faculty.faculty_id}</td>
+                    <td>${faculty.name}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="openEditModal(${faculty.faculty_id}, '${faculty.name}')">Edit</button>
+                    </td>
+                `;
             tbody.appendChild(tr);
           });
         }
@@ -124,9 +181,10 @@
           btnText.textContent = "Add Faculty";
 
           alertBox.className = "alert";
-          if (result.status === "success") {
+          if (result.status === "success" || result.status === 201) {
             alertBox.classList.add("alert-success");
-            alertBox.textContent = result.message;
+            alertBox.textContent =
+              result.message || "Faculty added successfully";
             form.reset();
             fetchFaculties();
           } else {
@@ -134,6 +192,65 @@
             alertBox.textContent = result.message;
           }
         });
+
+      function openEditModal(id, name) {
+        document.getElementById("edit_faculty_id").value = id;
+        document.getElementById("edit_name").value = name;
+
+        const editModal = new bootstrap.Modal(
+          document.getElementById("editModal"),
+        );
+        editModal.show();
+      }
+
+      document
+        .getElementById("editFacultyForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const id = document.getElementById("edit_faculty_id").value;
+          const name = document.getElementById("edit_name").value;
+          const submitBtn = document.getElementById("editSubmitBtn");
+          const btnSpinner = document.getElementById("editBtnSpinner");
+          const btnText = document.getElementById("editBtnText");
+
+          submitBtn.disabled = true;
+          btnSpinner.classList.remove("d-none");
+          btnText.textContent = "Saving...";
+
+          await editFaculty(id, name);
+
+          submitBtn.disabled = false;
+          btnSpinner.classList.add("d-none");
+          btnText.textContent = "Save Changes";
+
+          const modalElement = document.getElementById("editModal");
+          const editModal = bootstrap.Modal.getInstance(modalElement);
+          editModal.hide();
+        });
+
+      async function editFaculty(facultyId, newName) {
+        const payload = {
+          faculty_id: facultyId,
+          name: newName,
+        };
+
+        const response = await fetch(baseUrl + "EditFaculty.php", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const result = await response.json();
+
+        if (result.status === "success") {
+          fetchFaculties();
+        } else {
+          alert(result.message);
+        }
+      }
 
       window.onload = fetchFaculties;
     </script>

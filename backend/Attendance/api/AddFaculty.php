@@ -20,7 +20,13 @@ if (empty($name)) {
     exit();
 }
 
-$facultyModel->addFaculty($name);
 
-http_response_code(201);
-echo json_encode(["status" => "success", "message" => "Faculty added successfully"]);
+
+$result = $facultyModel->AddFaculty($name);
+if ($result) {
+    http_response_code(201);
+    echo json_encode(["status" => "success", "message" => "Faculty added successfully"]);
+} else {
+    http_response_code(409);
+    echo json_encode(["status" => "error", "message" => "Faculty already exists"]);
+}

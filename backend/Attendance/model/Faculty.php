@@ -13,20 +13,23 @@ class Faculty extends Connection
         parent::__construct();
     }
 
-    public function getFaculty()
+    public function GetFaculty()
     {
         return  $this->getAllRecords('faculties');
     }
 
-    public function addFaculty(string $faculty_name)
+    public function AddFaculty(string $faculty_name)
     {
+        // check if it already exist
+        $check =  $this->recordExists('faculties', 'name', $faculty_name);
+        if ($check) {
+            return false;
+        }
         return $this->insertFaculty($faculty_name);
     }
-
-    public function editFaculty($faculty_name, $faculty_id)
+    public function EditFaculty(string $faculty_name, string  $faculty_id)
     {
 
         return $this->updateFaculty($faculty_name, $faculty_id);
     }
 }
-
