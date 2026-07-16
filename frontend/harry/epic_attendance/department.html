@@ -1,21 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Departments</title>
     <!-- Standard Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../group_message_app/bootstrap/bootstrap.min.css" rel="stylesheet">
     <style>
         /* Clean, neutral styling without the previous custom colors */
         body {
             background-color: #f8f9fa;
             font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
+
         .sidebar {
             min-height: 100vh;
-            background-color: #212529; /* Standard dark slate */
+            background-color: #212529;
+            /* Standard dark slate */
         }
+
         .sidebar a {
             color: #adb5bd;
             text-decoration: none;
@@ -24,17 +28,21 @@
             border-radius: 4px;
             margin-bottom: 5px;
         }
-        .sidebar a:hover, .sidebar a.active {
+
+        .sidebar a:hover,
+        .sidebar a.active {
             background-color: #343a40;
             color: #ffffff;
         }
+
         .card {
             border: none;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
             border-radius: 8px;
         }
     </style>
 </head>
+
 <body>
     <div class="d-flex">
         <!-- Sidebar Navigation -->
@@ -69,7 +77,9 @@
                             </tr>
                         </thead>
                         <tbody id="tableBody">
-                            <tr><td colspan="4" class="text-center text-muted">Loading data...</td></tr>
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">Loading data...</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -88,7 +98,7 @@
                 <div class="modal-body">
                     <form id="dataForm">
                         <input type="hidden" id="department_id">
-                        
+
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Select Faculty</label>
                             <select id="faculty_id" class="form-select bg-light" required>
@@ -98,9 +108,10 @@
 
                         <div class="mb-4">
                             <label class="form-label fw-semibold">Department Name</label>
-                            <input type="text" id="name" class="form-control bg-light" required placeholder="e.g. Software Engineering">
+                            <input type="text" id="name" class="form-control bg-light" required
+                                placeholder="e.g. Software Engineering">
                         </div>
-                        
+
                         <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">Save Department</button>
                     </form>
                 </div>
@@ -108,11 +119,11 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../group_message_app/bootstrap/js/bootstrap.bundle.js"></script>
     <script>
         var baseUrl = 'http://localhost:8000/api/';
         var bootstrapModal = new bootstrap.Modal(document.getElementById('dataModal'));
-        
+
         // Helper to get headers (attaches token if available)
         function getHeaders(isJson) {
             var headers = {};
@@ -128,8 +139,8 @@
 
         function showAlert(message, type) {
             var alertBox = document.getElementById('alertBox');
-            alertBox.innerHTML = '<div class="alert alert-' + type + ' alert-dismissible shadow-sm">' + message + 
-                                 '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+            alertBox.innerHTML = '<div class="alert alert-' + type + ' alert-dismissible shadow-sm">' + message +
+                '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
         }
 
         function logout() {
@@ -143,9 +154,9 @@
                 var response = await fetch(baseUrl + 'GetFaculty.php', { method: 'GET', headers: getHeaders(false) });
                 var result = await response.json();
                 var select = document.getElementById('faculty_id');
-                
+
                 select.innerHTML = '<option value="">Select a Faculty...</option>';
-                
+
                 if (result.status === 'success' && result.data) {
                     for (var i = 0; i < result.data.length; i++) {
                         var faculty = result.data[i];
@@ -173,16 +184,16 @@
                     for (var i = 0; i < result.data.length; i++) {
                         var dept = result.data[i];
                         var tr = document.createElement('tr');
-                        
-                        tr.innerHTML = 
+
+                        tr.innerHTML =
                             '<td>#' + dept.department_id + '</td>' +
                             '<td class="fw-medium">' + dept.name + '</td>' +
                             '<td>' + dept.faculty_id + '</td>' +
                             '<td class="text-end">' +
-                                '<button class="btn btn-sm btn-outline-secondary" ' +
-                                'onclick="openModal(\'' + dept.department_id + '\', \'' + dept.name + '\', \'' + dept.faculty_id + '\')">Edit</button>' +
+                            '<button class="btn btn-sm btn-outline-secondary" ' +
+                            'onclick="openModal(\'' + dept.department_id + '\', \'' + dept.name + '\', \'' + dept.faculty_id + '\')">Edit</button>' +
                             '</td>';
-                        
+
                         tbody.appendChild(tr);
                     }
                 } else {
@@ -204,13 +215,13 @@
         }
 
         // Handle form submission
-        document.getElementById('dataForm').addEventListener('submit', async function(e) {
+        document.getElementById('dataForm').addEventListener('submit', async function (e) {
             e.preventDefault();
-            
+
             var id = document.getElementById('department_id').value;
             var name = document.getElementById('name').value;
             var facultyId = document.getElementById('faculty_id').value;
-            
+
             var endpoint = '';
             var method = '';
             var headers = {};
@@ -242,7 +253,7 @@
                     headers: headers,
                     body: bodyData
                 });
-                
+
                 var result = await response.json();
 
                 if (result.status === 'success') {
@@ -259,10 +270,11 @@
         });
 
         // Initialize data on page load
-        window.onload = function() {
+        window.onload = function () {
             loadFaculties();
             loadDepartments();
         };
     </script>
 </body>
+
 </html>
