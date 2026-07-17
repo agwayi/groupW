@@ -1,0 +1,11 @@
+IMAP server: imap-wisdomit.alwaysdata.net
+
+POP server: pop-wisdomit.alwaysdata.net
+
+Outgoing SMTP server: smtp-wisdomit.alwaysdata.net
+
+CardDAV server: carddav-wisdomit.alwaysdata.net
+
+CalDAV server: caldav-wisdomit.alwaysdata.net
+
+password: 
